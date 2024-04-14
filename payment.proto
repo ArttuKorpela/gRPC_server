@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package payment;
+
+// The payment service definition.
+service PaymentService {
+  // Sends a payment request to the server.
+  rpc ProcessPayment (PaymentRequest) returns (PaymentResponse);
+}
+
+// The request message containing the user's phone number and the amount of money.
+message PaymentRequest {
+  string phone_number = 1;  // User's phone number
+  double amount = 2;        // Amount of money to be sent
+}
+
+// The response message indicating whether the payment was accepted or declined.
+message PaymentResponse {
+  bool accepted = 1;  // true if the payment was accepted, false if declined
+}

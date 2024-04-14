@@ -1,4 +1,4 @@
-module payment-service
+module github.com/ArttuKorpela/gRPC_server
 
 go 1.22.2
 

@@ -7,7 +7,7 @@ import (
 	"net"
 
 	"google.golang.org/grpc"
-	pb "https://github.com/ArttuKorpela/gRPC_server/server/payment"
+	pb "github.com/ArttuKorpela/gRPC_server/server/payment"
 )
 
 type server struct {

@@ -4,7 +4,7 @@
 // - protoc             v3.12.4
 // source: payment.proto
 
-package gRPC_server
+package payment
 
 import (
 	context "context"
@@ -27,7 +27,7 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type PaymentServiceClient interface {
 	// Sends a payment request to the server.
-	ProcessPayment(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error)
+	ProcessPayment(ctx context.Context, in *Payment, opts ...grpc.CallOption) (*Response, error)
 }
 
 type paymentServiceClient struct {
@@ -38,8 +38,8 @@ func NewPaymentServiceClient(cc grpc.ClientConnInterface) PaymentServiceClient {
 	return &paymentServiceClient{cc}
 }
 
-func (c *paymentServiceClient) ProcessPayment(ctx context.Context, in *PaymentRequest, opts ...grpc.CallOption) (*PaymentResponse, error) {
-	out := new(PaymentResponse)
+func (c *paymentServiceClient) ProcessPayment(ctx context.Context, in *Payment, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := c.cc.Invoke(ctx, PaymentService_ProcessPayment_FullMethodName, in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -52,7 +52,7 @@ func (c *paymentServiceClient) ProcessPayment(ctx context.Context, in *PaymentRe
 // for forward compatibility
 type PaymentServiceServer interface {
 	// Sends a payment request to the server.
-	ProcessPayment(context.Context, *PaymentRequest) (*PaymentResponse, error)
+	ProcessPayment(context.Context, *Payment) (*Response, error)
 	mustEmbedUnimplementedPaymentServiceServer()
 }
 
@@ -60,7 +60,7 @@ type PaymentServiceServer interface {
 type UnimplementedPaymentServiceServer struct {
 }
 
-func (UnimplementedPaymentServiceServer) ProcessPayment(context.Context, *PaymentRequest) (*PaymentResponse, error) {
+func (UnimplementedPaymentServiceServer) ProcessPayment(context.Context, *Payment) (*Response, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ProcessPayment not implemented")
 }
 func (UnimplementedPaymentServiceServer) mustEmbedUnimplementedPaymentServiceServer() {}
@@ -77,7 +77,7 @@ func RegisterPaymentServiceServer(s grpc.ServiceRegistrar, srv PaymentServiceSer
 }
 
 func _PaymentService_ProcessPayment_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(PaymentRequest)
+	in := new(Payment)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -89,7 +89,7 @@ func _PaymentService_ProcessPayment_Handler(srv interface{}, ctx context.Context
 		FullMethod: PaymentService_ProcessPayment_FullMethodName,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(PaymentServiceServer).ProcessPayment(ctx, req.(*PaymentRequest))
+		return srv.(PaymentServiceServer).ProcessPayment(ctx, req.(*Payment))
 	}
 	return interceptor(ctx, in, info, handler)
 }

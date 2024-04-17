@@ -9,9 +9,10 @@ import (
 	"net"
 	"net/http"
 
+
 	"google.golang.org/grpc"
 	pb "github.com/ArttuKorpela/gRPC_server/server/payment"
-	"github.com/ArttuKorpela/gRPC_server/server/db"
+	db "github.com/ArttuKorpela/gRPC_server/server/db"
 )
 
 type server struct {
@@ -84,14 +85,16 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	//Get context
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
-	//Start the database
-	usersCollection, err := db.startDatabase(ctx)
+
+	// Correct function name and removed unused 'cancel'
+	ctx := context.Background()
+	
+	// Start the database and use the collection
+	usersCollection, err := db.StartDatabase(ctx)  // Ensure this function is exported in db package
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	// You might want to do something with usersCollection here
 
 	s := grpc.NewServer()
 	pb.RegisterPaymentServiceServer(s, &server{})

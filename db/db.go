@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-	"log"
+
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -11,7 +11,7 @@ import (
 
 // startDatabase initializes a MongoDB client and returns a reference to the users collection.
 // It returns a mongo.Collection pointer and any error encountered.
-func startDatabase(ctx context.Context) (*mongo.Collection, error) {
+func StartDatabase(ctx context.Context) (*mongo.Collection, error) {
 	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {

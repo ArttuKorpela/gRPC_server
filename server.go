@@ -11,68 +11,86 @@ import (
 
 	"google.golang.org/grpc"
 	pb "github.com/ArttuKorpela/gRPC_server/server/payment"
+	"github.com/ArttuKorpela/gRPC_server/server/db"
 )
 
 type server struct {
 	pb.UnimplementedPaymentServiceServer
 }
 
-func (s *server) ProcessPayment(ctx context.Context, in *pb.PaymentRequest) (*pb.PaymentResponse, error) {
-	log.Printf("Received a payment request: %v", in)
 
-	// Construct the request to the Node.js server
-	response, err := makeHTTPRequest(ctx, in.Phone_number, in.Amount)
-	if err != nil {
-		log.Printf("Error calling Node.js server: %v", err)
-		return nil, err
+
+func (s *server) ProcessPayment(ctx context.Context, in *pb.Payment) (*pb.Response, error) {
+	type JSONResponse struct {
+		Success bool   `json:"success"`
+		Message string `json:"message"`
 	}
 
-	// Log and use the response from the Node.js server
-	log.Printf("Node.js server response: %s", response)
-	accepted := response == "Payment confirmed by user"
+    log.Printf("Received a payment request: Phone Number=%v, Amount=%v", in.PhoneNumber, in.Amount)
 
-	// Return the response based on the Node.js confirmation
-	return &pb.PaymentResponse{Accepted: accepted}, nil
+    // Construct the request to the Node.js server
+    response, err := makeHTTPRequest(ctx, in.PhoneNumber, in.Amount)
+    if err != nil {
+        log.Printf("Error calling Node.js server: %v", err)
+        return nil, err
+    }
+
+    // Log and use the response from the Node.js server
+    log.Printf("Node.js server response: %s", response)
+	var jsonResponse JSONResponse
+	json.Unmarshal([]byte(response), &jsonResponse)
+	log.Printf("%s", jsonResponse.Message)
+    accepted := jsonResponse.Message == "Payment confirmation received"
+	log.Printf("%b",accepted)
+    // Return the response based on the Node.js confirmation
+    return &pb.Response{Accepted: accepted}, nil
 }
 
-func makeHTTPRequest(ctx context.Context, phone_number int32, amount float64) (string, error) {
-	// Marshal the data into a JSON payload
-	payload, err := json.Marshal(map[string]interface{}{
-		"phonenumber": phone_number,
-		"amount": amount,
-	})
-	if err != nil {
-		return "", err
-	}
+func makeHTTPRequest(ctx context.Context, phoneNumber string, amount float64) (string, error) {
+    // Marshal the data into a JSON payload
+    payload, err := json.Marshal(map[string]interface{}{
+        "phoneNumber": phoneNumber,
+        "amount": amount,
+    })
+    if err != nil {
+        return "", err
+    }
 
-	// Create a new request with the payload
-	req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:8000/confirm-payment", bytes.NewBuffer(payload))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Content-Type", "application/json")
+    // Create a new request with the payload
+    req, err := http.NewRequestWithContext(ctx, "POST", "http://localhost:8000/confirm-payment", bytes.NewBuffer(payload))
+    if err != nil {
+        return "", err
+    }
+    req.Header.Set("Content-Type", "application/json")
 
-	// Send the request
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
+    // Send the request
+    client := &http.Client{}
+    resp, err := client.Do(req)
+    if err != nil {
+        return "", err
+    }
+    defer resp.Body.Close()
 
-	// Read and return the response
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return "", err
-	}
+    // Read and return the response
+    body, err := ioutil.ReadAll(resp.Body)
+    if err != nil {
+        return "", err
+    }
 
-	return string(body), nil
+    return string(body), nil
 }
-
 func main() {
 	lis, err := net.Listen("tcp", ":50051")
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
+	}
+	//Get context
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	//Start the database
+	usersCollection, err := db.startDatabase(ctx)
+	if err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	s := grpc.NewServer()

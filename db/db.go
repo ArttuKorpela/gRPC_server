@@ -2,7 +2,7 @@ package db
 
 import (
 	"context"
-
+	"fmt"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -29,4 +29,5 @@ func StartDatabase(ctx context.Context) (*mongo.Collection, error) {
 	panic(err)
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
+	return client
 }

@@ -29,5 +29,5 @@ func StartDatabase(ctx context.Context) (*mongo.Collection, error) {
 	panic(err)
 	}
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
-	return client
+	return client.Database("users").Collection("documents"), err
 }

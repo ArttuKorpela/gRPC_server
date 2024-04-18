@@ -12,7 +12,7 @@ import (
 // startDatabase initializes a MongoDB client and returns a reference to the users collection.
 // It returns a mongo.Collection pointer and any error encountered.
 func StartDatabase(ctx context.Context) (*mongo.Collection, error) {
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
+	clientOptions := options.Client().ApplyURI("mongodb://host.docker.internal:27017")
 	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		return nil, err

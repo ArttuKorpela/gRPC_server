@@ -94,6 +94,9 @@ func main() {
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
+	if usersCollection != nil {
+		log.Println("Connected to database successfully")
+	}
 	// You might want to do something with usersCollection here
 
 	s := grpc.NewServer()

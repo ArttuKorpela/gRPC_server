@@ -20,8 +20,9 @@ func StartDatabase(ctx context.Context) (*mongo.Client, error) {
         fmt.Println("Error loading .env file")
     }
 	// Get the MongoDB URI from environment variables
+	
 	mongoURI := os.Getenv("MONGO_URI")
-
+	
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
 	client, err := mongo.Connect(ctx, opts)
@@ -37,4 +38,24 @@ func StartDatabase(ctx context.Context) (*mongo.Client, error) {
 
 	fmt.Println("Pinged your deployment. You successfully connected to MongoDB!")
 	return client, nil
+}
+
+func AddUser(ctx context.Context, client *mongo.Client, user map[string]interface{}) error {
+    usersCollection := client.Database("yourDatabaseName").Collection("users")
+    _, err := usersCollection.InsertOne(ctx, user)
+    if err != nil {
+        return fmt.Errorf("failed to add user: %w", err)
+    }
+    return nil
+}
+
+func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string, newBalance float64) error {
+    usersCollection := client.Database("yourDatabaseName").Collection("users")
+    filter := bson.M{"_id": userID} // Adjust the identifier according to your schema, this assumes _id is used
+    update := bson.M{"$set": bson.M{"balance": newBalance}}
+    _, err := usersCollection.UpdateOne(ctx, filter, update)
+    if err != nil {
+        return fmt.Errorf("failed to update user balance: %w", err)
+    }
+    return nil
 }

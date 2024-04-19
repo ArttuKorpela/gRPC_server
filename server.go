@@ -89,14 +89,31 @@ func main() {
 	ctx := context.Background()
 	
 	// Start the database and use the collection
-	usersCollection, err := db.StartDatabase(ctx)  // Ensure this function is exported in db package
+	client, err := db.StartDatabase(ctx)  // Ensure this function is exported in db package
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
-	if usersCollection != nil {
-		log.Println("Connected to database successfully")
-	}
-	// You might want to do something with usersCollection here
+	log.Println("Connected to database successfully")
+	
+	// Adding a new user
+    newUser := map[string]interface{}{
+        "_id": "user123",
+        "name": "John Doe",
+        "balance": 100.0,
+    }
+    err = db.AddUser(ctx, client, newUser)
+    if err != nil {
+        log.Fatalf("Failed to add user: %v", err)
+    }
+    log.Println("User added successfully")
+
+    // Updating a user's balance
+    err = db.UpdateUserBalance(ctx, client, "user123", 150.0)
+    if err != nil {
+        log.Fatalf("Failed to update user balance: %v", err)
+    }
+    log.Println("User balance updated successfully")
+
 
 	s := grpc.NewServer()
 	pb.RegisterPaymentServiceServer(s, &server{})

@@ -9,7 +9,7 @@ import (
 	"net"
 	"net/http"
 
-
+	"github.com/joho/godotenv"
 	"google.golang.org/grpc"
 	pb "github.com/ArttuKorpela/gRPC_server/server/payment"
 	db "github.com/ArttuKorpela/gRPC_server/server/db"

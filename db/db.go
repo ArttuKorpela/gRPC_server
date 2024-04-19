@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/joho/godotenv"
+	os "github.com/joho/godotenv"
+
 	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
@@ -15,7 +17,7 @@ func StartDatabase(ctx context.Context) (*mongo.Client, error) {
 	// Load .env file
     err := godotenv.Load()
     if err != nil {
-        log.Fatalf("Error loading .env file")
+        fmt.Println("Error loading .env file")
     }
 	// Get the MongoDB URI from environment variables
 	mongoURI := os.Getenv("MONGO_URI")

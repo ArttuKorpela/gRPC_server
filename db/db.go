@@ -11,6 +11,14 @@ import (
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
+type User struct {
+    ID       string `bson:"_id,omitempty"`
+    Username string `bson:"username"`
+    Email    string `bson:"email"`
+    Password string `bson:"password"` // This should be a hashed password
+	Balance float64 `bson:"balance"`
+}
+
 // StartDatabase initializes a MongoDB client and returns it.
 // It returns a *mongo.Client and any error encountered.
 func StartDatabase(ctx context.Context) (*mongo.Client, error) {
@@ -40,7 +48,26 @@ func StartDatabase(ctx context.Context) (*mongo.Client, error) {
 	return client, nil
 }
 
-func AddUser(ctx context.Context, client *mongo.Client, user map[string]interface{}) error {
+func GetUserByID(ctx context.Context, client *mongo.Client, id string) (*User, error) {
+    // Getting a handle for the users collection in your database
+    usersCollection := client.Database("yourDatabaseName").Collection("users")
+
+    // Define a variable to hold the user info
+    var user User
+
+    // Finding a single document
+    err := usersCollection.FindOne(ctx, bson.M{"_id": id}).Decode(&user)
+    if err != nil {
+        if err == mongo.ErrNoDocuments {
+            return nil, fmt.Errorf("no user found with id %s: %w", id, err)
+        }
+        return nil, fmt.Errorf("error fetching user by id %s: %w", id, err)
+    }
+
+    return &user, nil
+}
+
+func AddUser(ctx context.Context, client *mongo.Client, user User) error {
     usersCollection := client.Database("yourDatabaseName").Collection("users")
     _, err := usersCollection.InsertOne(ctx, user)
     if err != nil {

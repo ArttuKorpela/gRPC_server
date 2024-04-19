@@ -95,12 +95,15 @@ func main() {
 	}
 	log.Println("Connected to database successfully")
 	
-	// Adding a new user
-    newUser := map[string]interface{}{
-        "_id": "user123",
-        "name": "John Doe",
-        "balance": 100.0,
-    }
+	
+	newUser:= db.User{
+		ID: "test",
+		Username: "john_doe",
+        Email:    "john.doe@example.com",
+        Password: "hashed_password_here",
+		balance: 70.0,
+	}
+
     err = db.AddUser(ctx, client, newUser)
     if err != nil {
         log.Fatalf("Failed to add user: %v", err)
@@ -108,7 +111,7 @@ func main() {
     log.Println("User added successfully")
 
     // Updating a user's balance
-    err = db.UpdateUserBalance(ctx, client, "user123", 150.0)
+    err = db.UpdateUserBalance(ctx, client, "test", 123.0)
     if err != nil {
         log.Fatalf("Failed to update user balance: %v", err)
     }

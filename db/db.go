@@ -13,7 +13,7 @@ import (
 // It returns a mongo.Collection pointer and any error encountered.
 func StartDatabase(ctx context.Context) (*mongo.Collection, error) {
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
-	opts := options.Client().ApplyURI("mongodb+srv://arttukorpela01:Testi123!@distributedsystemstesti.a3bqykr.mongodb.net/?retryWrites=true&w=majority&appName=DistributedSystemsTesting").SetServerAPIOptions(serverAPI)
+	opts := options.Client().ApplyURI("mongodb+srv://arttukorpela01:AtPgifRvLsksVQKx@distributedsystemstesti.a3bqykr.mongodb.net/?retryWrites=true&w=majority&appName=DistributedSystemsTesting").SetServerAPIOptions(serverAPI)
 	client, err := mongo.Connect(ctx, opts)
 	if err != nil {
 		return nil, err

@@ -83,30 +83,29 @@ func UpdateUserBalanceWithTransaction(ctx context.Context, client *mongo.Client,
     }
     defer session.EndSession(ctx)
 
-    transactionErr := mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) (interface{}, error) {
+	transactionErr := session.WithTransaction(ctx, func(sessionContext mongo.SessionContext) error {
         usersCollection := client.Database("yourDatabaseName").Collection("users")
 
         var user struct {
             Balance float64 `bson:"balance"`
         }
         if err := usersCollection.FindOne(sessionContext, bson.M{"_id": userID}).Decode(&user); err != nil {
-            return nil, fmt.Errorf("failed to fetch user balance: %w", err)
+            return fmt.Errorf("failed to fetch user balance: %w", err)
         }
 
         if user.Balance < amountToDeduct {
-            return nil, fmt.Errorf("insufficient funds")
+            return fmt.Errorf("insufficient funds")
         }
 
         newBalance := user.Balance - amountToDeduct
         update := bson.M{"$set": bson.M{"balance": newBalance}}
         _, err = usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update)
         if err != nil {
-            return nil, fmt.Errorf("failed to update user balance: %w", err)
+            return fmt.Errorf("failed to update user balance: %w", err)
         }
 
-        return nil, nil
-    })
-
+        return nil
+    }, options.Transaction().SetReadConcern(mongo.ReadConcernLocal()).SetWriteConcern(mongo.WriteConcern().SetW(mongo.WriteConcernMajority())))
     if transactionErr != nil {
         return fmt.Errorf("transaction failed: %w", transactionErr)
     }

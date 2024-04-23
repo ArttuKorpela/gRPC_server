@@ -83,7 +83,8 @@ func UpdateUserBalanceWithTransaction(ctx context.Context, client *mongo.Client,
     }
     defer session.EndSession(ctx)
 
-	transactionErr := session.WithTransaction(ctx, func(sessionContext mongo.SessionContext) error {
+    // Transactional function which only returns error
+    transactionErr := session.WithTransaction(ctx, func(sessionContext mongo.SessionContext) error {
         usersCollection := client.Database("yourDatabaseName").Collection("users")
 
         var user struct {
@@ -106,6 +107,7 @@ func UpdateUserBalanceWithTransaction(ctx context.Context, client *mongo.Client,
 
         return nil
     }, options.Transaction().SetReadConcern(mongo.ReadConcernLocal()).SetWriteConcern(mongo.WriteConcern().SetW(mongo.WriteConcernMajority())))
+
     if transactionErr != nil {
         return fmt.Errorf("transaction failed: %w", transactionErr)
     }

@@ -94,7 +94,7 @@ func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string,
 		usersCollection := client.Database("yourDatabaseName").Collection("users")
 
 		user := User{}
-		result, err := FindOne(sessionContext, bson.M{"_id": userID}).Decode(&user); 
+		result, err := usersCollection.FindOne(sessionContext, bson.M{"_id": userID}).Decode(&user); 
 		if err != nil {
             return nil, err
         }

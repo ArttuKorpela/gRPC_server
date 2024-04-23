@@ -9,6 +9,8 @@ import (
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/writeconcern"
+	"go.mongodb.org/mongo-driver/mongo/readconcern"
 )
 
 type User struct {
@@ -79,7 +81,7 @@ func AddUser(ctx context.Context, client *mongo.Client, user User) error {
 
 func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string, amountToDeduct float64) error {
 	wc := writeconcern.New(writeconcern.WMajority())
-    rc := readconcern.Snapshot()
+	rc := readconcern.New(readconcern.Level("snapshot")) 
     txnOpts := options.Transaction().SetWriteConcern(wc).SetReadConcern(rc)
 
     session, err := client.StartSession()
@@ -117,5 +119,7 @@ func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string,
     if err != nil {
         panic(err)
     }
+
+	return nil
 }
 

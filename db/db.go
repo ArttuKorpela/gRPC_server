@@ -76,48 +76,36 @@ func AddUser(ctx context.Context, client *mongo.Client, user User) error {
     return nil
 }
 
-func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string, newBalance float64) error {
-    usersCollection := client.Database("yourDatabaseName").Collection("users")
-    filter := bson.M{"_id": userID} 
-    update := bson.M{"$set": bson.M{"balance": newBalance}}
-    _, err := usersCollection.UpdateOne(ctx, filter, update)
-    if err != nil {
-        return fmt.Errorf("failed to update user balance: %w", err)
-    }
-    return nil
-}
-
 func UpdateUserBalanceWithTransaction(ctx context.Context, client *mongo.Client, userID string, amountToDeduct float64) error {
-    // Start a session for transaction
     session, err := client.StartSession()
     if err != nil {
         return fmt.Errorf("failed to start session: %w", err)
     }
     defer session.EndSession(ctx)
 
-    // Define the operations to be executed in the transaction
-    transactionErr := session.WithTransaction(ctx, func(sessionContext mongo.SessionContext) error {
+    transactionErr := mongo.WithSession(ctx, session, func(sessionContext mongo.SessionContext) (interface{}, error) {
         usersCollection := client.Database("yourDatabaseName").Collection("users")
 
         var user struct {
             Balance float64 `bson:"balance"`
         }
         if err := usersCollection.FindOne(sessionContext, bson.M{"_id": userID}).Decode(&user); err != nil {
-            return fmt.Errorf("failed to fetch user balance: %w", err)
+            return nil, fmt.Errorf("failed to fetch user balance: %w", err)
         }
 
         if user.Balance < amountToDeduct {
-            return fmt.Errorf("insufficient funds")
+            return nil, fmt.Errorf("insufficient funds")
         }
 
         newBalance := user.Balance - amountToDeduct
         update := bson.M{"$set": bson.M{"balance": newBalance}}
-        if _, err := usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update); err != nil {
-            return fmt.Errorf("failed to update user balance: %w", err)
+        _, err = usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update)
+        if err != nil {
+            return nil, fmt.Errorf("failed to update user balance: %w", err)
         }
 
-        return nil
-    }, options.Transaction().SetReadConcern(mongo.ReadConcernMajority()).SetWriteConcern(mongo.WriteConcernMajority()))
+        return nil, nil
+    })
 
     if transactionErr != nil {
         return fmt.Errorf("transaction failed: %w", transactionErr)

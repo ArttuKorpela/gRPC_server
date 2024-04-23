@@ -105,7 +105,8 @@ func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string,
 
 		newBalance := user.Balance - amountToDeduct
         update := bson.M{"$set": bson.M{"balance": newBalance}}
-        err = usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update)
+		
+        _,err = usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update)
         if err != nil {
             return nil,fmt.Errorf("failed to update user balance: %w", err)
         }

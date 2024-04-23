@@ -8,7 +8,10 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"os"
 
+
+	"github.com/joho/godotenv"
 	"github.com/gin-gonic/gin"
 	"google.golang.org/grpc"
 	pb "github.com/ArttuKorpela/gRPC_server/server/payment"
@@ -95,9 +98,17 @@ func main() {
 
 	// Correct function name and removed unused 'cancel'
 	ctx := context.Background()
+
+	err = godotenv.Load()
+    if err != nil {
+        log.Println("Error loading .env file")
+    }
+	// Get the MongoDB URI from environment variables
+	
+	mongoURI := os.Getenv("MONGO_URI")
 	
 	// Start the database and use the collection
-	client, err := db.StartDatabase(ctx)  // Ensure this function is exported in db package
+	client, err := db.StartDatabase(ctx, mongoURI)  // Ensure this function is exported in db package
 	if err != nil {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}

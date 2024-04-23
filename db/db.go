@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"github.com/joho/godotenv"
 
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/bson"
@@ -23,16 +22,8 @@ type User struct {
 
 // StartDatabase initializes a MongoDB client and returns it.
 // It returns a *mongo.Client and any error encountered.
-func StartDatabase(ctx context.Context) (*mongo.Client, error) {
-	// Load .env file
-    err := godotenv.Load()
-    if err != nil {
-        fmt.Println("Error loading .env file")
-    }
-	// Get the MongoDB URI from environment variables
-	
-	mongoURI := os.Getenv("MONGO_URI")
-	
+func StartDatabase(ctx context.Context, mongoURI string) (*mongo.Client, error) {
+    
 	serverAPI := options.ServerAPI(options.ServerAPIVersion1)
 	opts := options.Client().ApplyURI(mongoURI).SetServerAPIOptions(serverAPI)
 	client, err := mongo.Connect(ctx, opts)
@@ -105,7 +96,7 @@ func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string,
 
 		newBalance := user.Balance - amountToDeduct
         update := bson.M{"$set": bson.M{"balance": newBalance}}
-		
+	
         _,err = usersCollection.UpdateOne(sessionContext, bson.M{"_id": userID}, update)
         if err != nil {
             return nil,fmt.Errorf("failed to update user balance: %w", err)

@@ -110,7 +110,7 @@ func UpdateUserBalance(ctx context.Context, client *mongo.Client, userID string,
             return nil,fmt.Errorf("failed to update user balance: %w", err)
         }
 
-		return nil
+		return nil,err
 
 
     }
